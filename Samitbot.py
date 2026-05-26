@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """
 ULTIMATE GAME FREEZER v3.0 — TELEGRAM INTEGRATED
-Author: SAMIT
-Original game payloads preserved. Telegram wrapper added.
-
-Auth: Authorized pentesting - permission pre-verified
+Render-compatible version with health check
 """
 
 import asyncio
@@ -14,6 +11,7 @@ import time
 import argparse
 import sys
 import os
+import threading
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -268,7 +266,7 @@ async def send_bot_online_notification(application: Application):
             chat_id=user_id,
             text=(
                 "🤖 *ULTIMATE GAME FREEZER BOT — ONLINE* 💀\n\n"
-                "✅ Bot started successfully!\n"
+                "✅ Bot started successfully on Render!\n"
                 "🟢 Ready for attack commands.\n\n"
                 "📌 *Available Commands:*\n"
                 "`/start` — Show menu\n"
@@ -291,11 +289,38 @@ async def post_init(application: Application):
     """Called after app initialization — sends online notification."""
     await send_bot_online_notification(application)
 
+# ─── RENDER HEALTH CHECK SERVER ──────────────────────────────────────────
+
+def run_health_server():
+    """Simple HTTP server so Render doesn't kill the process."""
+    import http.server
+    import socketserver
+    
+    PORT = int(os.environ.get("PORT", 10000))
+    
+    class HealthHandler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"ULTIMATE GAME FREEZER BOT RUNNING")
+        
+        def log_message(self, format, *args):
+            pass  # Suppress logs
+    
+    with socketserver.TCPServer(("", PORT), HealthHandler) as httpd:
+        print(f"✅ Health server running on port {PORT}")
+        httpd.serve_forever()
+
 def start_bot():
-    """Initialize and start the Telegram bot."""
+    """Initialize and start the Telegram bot + health server."""
     print("🤖 Starting Telegram Bot mode...")
     print(f"🔑 Token: {BOT_TOKEN[:10]}...")
     print(f"👤 Owner ID: {ALLOWED_USERS[0]}")
+    
+    # Start health check server in a separate thread (for Render)
+    health_thread = threading.Thread(target=run_health_server, daemon=True)
+    health_thread.start()
     
     app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
     
@@ -310,7 +335,7 @@ def start_bot():
     print("📱 Check Telegram — you'll receive an online notification.")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
-# ─── CLI MAIN (ORIGINAL - UNCHANGED) ──────────────────────────────────────
+# ─── CLI MAIN ────────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser(add_help=False)
